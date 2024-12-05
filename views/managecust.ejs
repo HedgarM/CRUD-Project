@@ -1,0 +1,44 @@
+<%- include("_header") -%>
+
+<h2> Find Products AJAX</h2>
+
+<h4>Total number of records in the database: <%= totRecs %></h4>
+
+<!-- Not using bootstrap, just a simple form that you may enhance -->
+<!-- Using AJAX, no form action -->
+<form>
+    <table>
+        <tr>
+            <td><label for="cusid">ID</label>:</td>
+            <td><input type="text" name="cusid" id="cusid" type="number" /></td>
+            <td>(equal)</td>
+        </tr>
+        <tr>
+            <td><label for="cusfname">First Name</label>:</td>
+            <td><input type="text" name="cusfname" id="cusfname" /></td>
+            <td>(starts with)</td>
+        </tr>
+        <tr>
+            <td><label for="cuslname">Last Name</label>:</td>
+            <td><input type="text" name="cuslname" id="cuslname" /></td>
+            <td>(starts with)</td>
+        </tr>
+        <tr>
+            <td><label for="cusstate">State</label>:</td>
+            <td><input type="text" name="cusstate" id="cusstate" /></td>
+            <td>(greater than or equal)</td>
+        </tr>
+        <tr>
+            <td span="2">
+                <input type="submit" value="Find" />
+                <input type="reset" value="Reset" />
+            </td>
+        </tr>
+    </table>
+</form>
+
+<div id="output"></div>
+
+<script src="managecust.js"></script>
+
+<%- include("_footer") -%>
