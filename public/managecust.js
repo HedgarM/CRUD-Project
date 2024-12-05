@@ -32,11 +32,17 @@ const displayResults = (result) => {
           thDescElement.innerText = "Last Name";
           const thPriceElement = document.createElement("td");
           thPriceElement.innerText = "State";
+          const thAddRecordElement = document.createElement("th");
+          thAddRecordElement.classList.add("d-print-none");
+          thAddRecordElement.innerHTML = '<a class="btn btn-sm btn-success" href="/create">Add</a>';
+          ;
+
           // Add elements
           thRowElement.appendChild(thIdElement);
           thRowElement.appendChild(thNameElement);
           thRowElement.appendChild(thDescElement);
           thRowElement.appendChild(thPriceElement);
+          thRowElement.appendChild(thAddRecordElement);
           //
           theadElement.appendChild(thRowElement);
           //
