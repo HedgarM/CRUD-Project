@@ -32,6 +32,7 @@ app.use(express.static("public"));
 
 app.set("view engine", "ejs");
 
+app.use(express.json());
 app.use(express.urlencoded({ extended: false })); // <--- middleware configuration
 
 app.listen(process.env.PORT || 3000, () => {
@@ -56,4 +57,25 @@ app.post("/managecust", upload.array(), async (req, res) => {
       .then(result => res.send(result))
       .catch(err => res.send({trans: "Error", error: err.message}));
 
+});
+
+// GET /create
+app.get("/create", (req, res) => {
+  res.render("create", { model: {} });
+});
+
+// POST /create
+app.post("/create", (req, res) => {
+  const sql = "INSERT INTO customer (cusfname, cuslname, cusstate, cussalesytd, cussalesprev) VALUES ($1, $2, $3, $4, $5)";
+  const customer = [req.body.cusfname, req.body.cuslname, req.body.cusstate, req.body.cussalesytd, req.body.cussalesprev];
+
+  pool.query(sql, customer, (err, result) => {
+    console.log(sql);
+    if (err) {
+      console.error("Database query error:", err.message); // Log the error
+      return res.status(500).send("Error inserting data into the database."); // Send error response
+    }
+    console.log("Record added successfully");
+    res.redirect("/managecust");
+  });
 });
