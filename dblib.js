@@ -36,28 +36,43 @@ const findCustomer = (customer) => {
     let i = 1;
     const params = [];
     let sql = "SELECT * FROM customer WHERE true";
-
+    console.log(sql);
     // Check data provided and build the query as necessary
-    if (customer.cusid !== "") {
+    if (customer.cusid && customer.cusid !== "") {
         params.push(parseInt(customer.cusid));
         sql += ` AND cusid = $${i}`;
         i++;
-    };
-    if (customer.cusfname !== "") {
+    }
+    if (customer.cusfname && customer.cusfname.trim() !== "") {
         params.push(`${customer.cusfname}%`);
-        sql += ` AND UPPER(cusfname) LIKE UPPER($${i})`;
+        sql += ` AND cusfname LIKE $${i}`;
         i++;
-    };
-    if (customer.cuslname !== "") {
+    }
+    if (customer.cuslname && customer.cuslname.trim() !== "") {
         params.push(`${customer.cuslname}%`);
-        sql += ` AND UPPER(cuslname) LIKE UPPER($${i})`;
+        sql += ` AND cuslname LIKE $${i}`;
         i++;
-    };
-    if (customer.cusstate !== "") {
-        params.push(parseFloat(customer.cusstate));
-        sql += ` AND cusstate >= $${i}`;
+    }
+    if (customer.cusstate && customer.cusstate.trim() !== "") {
+        params.push(customer.cusstate);
+        sql += ` AND cusstate = $${i}`;
         i++;
-    };
+    }
+    console.log("cussalesytd raw input:", customer.cussalesytd, "Type:", typeof customer.cussalesytd);
+    if (customer.cussalesytd && customer.cussalesytd.trim() !== "" && !isNaN(Number(customer.cussalesytd))) {
+        console.log("Sales YTD value detected:", customer.cussalesytd); // Debugging
+        params.push(Number(customer.cussalesytd));
+        sql += ` AND cussalesytd >= $${i}`;
+        i++;
+    }
+    
+    if (customer.cussalesprev && customer.cussalesprev.trim() !== "" && !isNaN(parseFloat(customer.cussalesprev))) {
+        params.push(parseFloat(customer.cussalesprev));
+        sql += ` AND cussalesprev >= $${i}`;
+        i++;
+    }
+    
+
 
     sql += ` ORDER BY cusid`;
     // for debugging

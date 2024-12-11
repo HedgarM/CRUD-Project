@@ -22,52 +22,96 @@ const displayResults = (result) => {
       } else {
           // Create a table element and table header row
           const tblElement = document.createElement("table");
+          tblElement.classList.add("table","table-hover","align-middle","table-striped");
           const theadElement = document.createElement("thead");
           const thRowElement = document.createElement("tr");
-          const thIdElement = document.createElement("td");
+          
+          const thIdElement = document.createElement("th");
           thIdElement.innerText = "ID";
-          const thNameElement = document.createElement("td");
-          thNameElement.innerText = "First Name";
-          const thDescElement = document.createElement("td");
-          thDescElement.innerText = "Last Name";
-          const thPriceElement = document.createElement("td");
-          thPriceElement.innerText = "State";
+          const thFNameElement = document.createElement("th");
+          thFNameElement.innerText = "First Name";
+          const thLNameElement = document.createElement("th");
+          thLNameElement.innerText = "Last Name";
+          const thStateElement = document.createElement("th");
+          thStateElement.innerText = "State";
+          const thYTDElement = document.createElement("th");
+          thYTDElement.innerText = "Sales YTD";
+          const thPrevSalesElement = document.createElement("th");
+          thPrevSalesElement.innerText = "Previous Years Sales";
           const thAddRecordElement = document.createElement("th");
           thAddRecordElement.classList.add("d-print-none");
-          thAddRecordElement.innerHTML = '<a class="btn btn-sm btn-success" href="/create">Add</a>';
-          ;
-
-          // Add elements
+          thAddRecordElement.innerHTML = '<a class="btn btn-sm btn-success" href="/create">Create Customer</a>';
+          
+          // Add header elements
           thRowElement.appendChild(thIdElement);
-          thRowElement.appendChild(thNameElement);
-          thRowElement.appendChild(thDescElement);
-          thRowElement.appendChild(thPriceElement);
+          thRowElement.appendChild(thFNameElement);
+          thRowElement.appendChild(thLNameElement);
+          thRowElement.appendChild(thStateElement);
+          thRowElement.appendChild(thYTDElement);
+          thRowElement.appendChild(thPrevSalesElement);
           thRowElement.appendChild(thAddRecordElement);
-          //
+          
           theadElement.appendChild(thRowElement);
-          //
           tblElement.appendChild(theadElement);
+          
 
           // Loop
           result.rows.forEach(product => { 
             // Create table rows
             const trElement = document.createElement("tr");
+            
             const tdIdElement = document.createElement("td");
             tdIdElement.innerText = product.cusid;
-            const tdNameElement = document.createElement("td");
-            tdNameElement.innerText = product.cusfname;
-            const tdDescElement = document.createElement("td");
-            tdDescElement.innerText = product.cuslname;
-            const tdPriceElement = document.createElement("td");
-            tdPriceElement.innerText = product.cusstate;
-            // Add elements
+            
+            const tdFNameElement = document.createElement("td");
+            tdFNameElement.innerText = product.cusfname;
+            
+            const tdLNameElement = document.createElement("td");
+            tdLNameElement.innerText = product.cuslname;
+            
+            const tdStateElement = document.createElement("td");
+            tdStateElement.innerText = product.cusstate;
+            
+            const tdYTDElement = document.createElement("td");
+            tdYTDElement.innerText = product.cussalesytd;
+            
+            const tdPrevSalesElement = document.createElement("td");
+            tdPrevSalesElement.innerText = product.cussalesprev;
+        
+            // Create buttons for Edit and Delete
+            const tdActionsElement = document.createElement("td");
+            tdActionsElement.classList.add("text-center", "d-print-none");
+        
+            const editButton = document.createElement("button");
+            editButton.classList.add("btn", "btn-sm", "btn-warning", "me-2");
+            editButton.innerText = "Edit";
+            editButton.addEventListener("click", () => {
+                alert(`Edit record ID: ${product.cusid}`);
+            });
+        
+            const deleteButton = document.createElement("button");
+            deleteButton.classList.add("btn", "btn-sm", "btn-danger");
+            deleteButton.innerText = "Delete";
+            deleteButton.addEventListener("click", () => {
+                alert(`Delete record ID: ${product.cusid}`);
+            });
+        
+            // Append buttons to actions cell
+            tdActionsElement.appendChild(editButton);
+            tdActionsElement.appendChild(deleteButton);
+        
+            // Add cells to the row
             trElement.appendChild(tdIdElement);
-            trElement.appendChild(tdNameElement);
-            trElement.appendChild(tdDescElement);
-            trElement.appendChild(tdPriceElement);
-            //
+            trElement.appendChild(tdFNameElement);
+            trElement.appendChild(tdLNameElement);
+            trElement.appendChild(tdStateElement);
+            trElement.appendChild(tdYTDElement);
+            trElement.appendChild(tdPrevSalesElement);
+            trElement.appendChild(tdActionsElement);
+        
+            // Append row to the table
             tblElement.appendChild(trElement);
-          });
+        });
           // Add table to div
           divElement.appendChild(tblElement);
        };
