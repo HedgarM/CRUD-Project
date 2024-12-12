@@ -4,39 +4,67 @@
 <h4>Total Customers: <%= totRecs %></h4>
 <br>
 <p>Select a file with customers for Database insert</p>
-<form>
-    <input type="file" name="filename" required><p></p>
-    <input type="submit">
+<form id="importForm" enctype="multipart/form-data" method="POST">
+  <input type="file" name="filename" required />
+  <p></p>
+  <button type="submit" class="btn btn-primary">Import Customers</button>
 </form>
-<p id="result"></p>
+<br>
+<!-- Notification -->
+<div id="notification" class="mt-3 text-info" style="display: none;">
+  <strong>Wait for results...</strong>
+</div>
+
+<!-- Summary Section -->
+<div id="importSummary" class="mt-4" style="display: none;">
+  <h4>Import Summary</h4>
+  <p>Total Records Processed: <span id="totalRecords"></span></p>
+  <p>Records Inserted Successfully: <span id="successRecords"></span></p>
+  <p>Records Not Inserted: <span id="failedRecords"></span></p>
+  <h5>Errors</h5>
+  <ul id="errorList" class="text-danger"></ul>
+</div>
 
 <script>
-    // Typically, if the script is large, we place it in a separate file
-    //   For demonstration, it is included in the same file.
-    // Handle form submission
-    document.querySelector("form").addEventListener("submit", e => {
-      // Cancel default behavior of sending a synchronous POST request
-      e.preventDefault();
-      // Create a FormData object, passing the form as a parameter
-      const formData = new FormData(e.target);
-      // Send form data to the server with an asynchronous POST request
-      fetch("/import", {
-        method: "POST",
-        body: formData
-      })
-        .then(response => response.text())
-        .then(data => {
-            const resultElement = document.getElementById("result");
-            if (data.substring(0,5) === "Error") {
-                resultElement.innerText = `Error occurred!  ${data}`
-            } else {
-                resultElement.innerText = data;
-            };
-        })
-        .catch(err => {
-            document.getElementById("message").textContent = `Error: ${err.message}`;
+  document.getElementById("importForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    // Show "Wait for results" notification
+    const notification = document.getElementById("notification");
+    notification.style.display = "block";
+
+    const formData = new FormData(this);
+
+    // Send the form data via fetch
+    fetch("/import", {
+      method: "POST",
+      body: formData
+    })
+      .then(response => response.json()) // Expect JSON response
+      .then(result => {
+        notification.style.display = "none"; // Hide notification
+        const summary = document.getElementById("importSummary");
+        summary.style.display = "block";
+
+        // Update summary details
+        document.getElementById("totalRecords").innerText = result.total;
+        document.getElementById("successRecords").innerText = result.success;
+        document.getElementById("failedRecords").innerText = result.failed;
+
+        // Display errors, if any
+        const errorList = document.getElementById("errorList");
+        errorList.innerHTML = ""; // Clear previous errors
+        result.errors.forEach(error => {
+          const li = document.createElement("li");
+          li.innerText = error;
+          errorList.appendChild(li);
         });
-    });
-    </script>
+      })
+      .catch(err => {
+        notification.style.display = "none";
+        alert("An error occurred: " + err.message);
+      });
+  });
+</script>
 
 <%- include("_footer") -%>

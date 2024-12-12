@@ -128,31 +128,45 @@ app.get("/import", async (req, res) => {
 });
 });
 
-app.post("/import",  upload.single('filename'), (req, res) => {
-   if(!req.file || Object.keys(req.file).length === 0) {
-       let message = "Error: Import file not uploaded";
-       return res.send(message);
-   };
-   //Read file line by line, inserting records
-   const buffer = req.file.buffer; 
-   const lines = buffer.toString().split(/\r?\n/);
+app.post("/import", upload.single('filename'), async (req, res) => {
+  if (!req.file || Object.keys(req.file).length === 0) {
+    return res.status(400).json({ message: "Error: Import file not uploaded" });
+  }
 
-   lines.forEach(line => {
-        //console.log(line);
-        let product = line.split(",");
-        //console.log(product);
-        const sql = "INSERT INTO customer(cusfname, cuslname, cusstate, cussalesytd, cussalesprev) VALUES ($1, $2, $3, $4, $5)";
-        pool.query(sql, product, (err, result) => {
-            if (err) {
-                console.log(`Insert Error.  Error message: ${err.message}`);
-            } else {
-                console.log(`Inserted successfully`);
-            }
-       });
-   });
-   let message = `Processing Complete - Processed ${lines.length} records`;
-   res.send(message);
+  const buffer = req.file.buffer;
+  const lines = buffer.toString().split(/\r?\n/);
+
+  let successCount = 0;
+  let failedCount = 0;
+  const errors = [];
+
+  // Process file line by line
+  for (const line of lines) {
+    if (!line.trim()) continue; // Skip empty lines
+
+    const product = line.split(",");
+    const sql = `
+      INSERT INTO customer (cusfname, cuslname, cusstate, cussalesytd, cussalesprev) 
+      VALUES ($1, $2, $3, $4, $5)`;
+
+    try {
+      await pool.query(sql, product);
+      successCount++;
+    } catch (err) {
+      failedCount++;
+      errors.push(`Error on line "${line}": ${err.message}`);
+    }
+  }
+
+  // Send the summary as JSON response
+  res.json({
+    total: lines.length,
+    success: successCount,
+    failed: failedCount,
+    errors: errors
+  });
 });
+
 
 app.get("/export", (req, res) => {
   let message = "";
