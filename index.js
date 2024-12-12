@@ -1,4 +1,4 @@
-//SERVER SETUP
+// Import required packages and modules
 const express = require("express");
 const path = require("path");
 const app = express();
@@ -6,19 +6,20 @@ const dblib = require("./dblib.js");
 const multer = require("multer");
 const upload = multer();
 
-require('dotenv').config();
+require('dotenv').config(); // Load environment variables from .env file
 
+// Serve static files from the 'public' directory
 app.use(express.static("public"));
 
+// PostgreSQL connection setup using environment variables
 const { Pool } = require('pg');
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  },
-  max: 2
+  ssl: { rejectUnauthorized: false },
+  max: 2 // Limit database connections
 });
 
+// Middleware to handle CORS headers for API calls
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
@@ -28,105 +29,111 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static("public"));
-
+// Setup EJS as the view engine
 app.set("view engine", "ejs");
 
+// Middleware to parse incoming requests (JSON and URL-encoded)
 app.use(express.json());
-app.use(express.urlencoded({ extended: false })); // <--- middleware configuration
+app.use(express.urlencoded({ extended: false }));
 
+// Start the server on a specified port
 app.listen(process.env.PORT || 3000, () => {
   console.log("Server started (http://localhost:3000/) !");
 });
 
+// ------------------ ROUTES ------------------
+
+// Render the home page
 app.get("/", (req, res) => {
-  // res.send("Hello world...");
   res.render("index");
 });
 
+// Manage Customers - GET
 app.get("/managecust", async (req, res) => {
-  // Omitted validation check
-  const totRecs = await dblib.getTotalRecords();
-  res.render("managecust", {
-    totRecs: totRecs.totRecords,
-  });
+  const totRecs = await dblib.getTotalRecords(); // Fetch total records count
+  res.render("managecust", { totRecs: totRecs.totRecords });
 });
 
+// Manage Customers - POST (Search for customers)
 app.post("/managecust", upload.array(), async (req, res) => {
   dblib.findCustomer(req.body)
-    .then(result => res.send(result))
+    .then(result => res.send(result)) // Send search results
     .catch(err => res.send({ trans: "Error", error: err.message }));
-
 });
 
-// GET /create
+// Create Customer - GET (Display form)
 app.get("/create", (req, res) => {
   res.render("create", { model: {} });
 });
 
-// POST /create
+// Create Customer - POST (Insert into database)
 app.post("/create", (req, res) => {
-  const sql = "INSERT INTO customer (cusfname, cuslname, cusstate, cussalesytd, cussalesprev) VALUES ($1, $2, $3, $4, $5)";
-  const customer = [req.body.cusfname, req.body.cuslname, req.body.cusstate, req.body.cussalesytd, req.body.cussalesprev];
+  const sql = `
+    INSERT INTO customer (cusfname, cuslname, cusstate, cussalesytd, cussalesprev) 
+    VALUES ($1, $2, $3, $4, $5)`;
+  const customer = [
+    req.body.cusfname, 
+    req.body.cuslname, 
+    req.body.cusstate, 
+    req.body.cussalesytd, 
+    req.body.cussalesprev
+  ];
 
   pool.query(sql, customer, (err, result) => {
     if (err) {
       console.error("Database query error:", err.message);
       return res.status(500).render("create", { 
         message: "Error: Unable to create customer", 
-        model: req.body  // Pass back the entered values
+        model: req.body 
       });
     }
     console.log("Record added successfully");
     res.render("create", { 
       message: "New Customer Created!", 
-      model: {}  // Pass an empty model after successful creation
+      model: {} 
     });
   });
 });
 
-// GET /delete
+// Delete Customer - GET (Confirmation page)
 app.get("/delete/:id", (req, res) => {
   const id = req.params.id;
   const sql = "SELECT * FROM customer WHERE cusid = $1";
   pool.query(sql, [id], (err, result) => {
-    // if (err) ...
     res.render("delete", { model: result.rows[0] });
   });
 });
 
-// POST /delete
+// Delete Customer - POST (Delete from database)
 app.post("/delete/:id", (req, res) => {
   const id = req.params.id;
   const sql = "DELETE FROM customer WHERE cusid = $1";
-
   pool.query(sql, [id], (err, result) => {
     if (err) {
       console.error("Database query error:", err.message);
       return res.status(500).render("delete", { 
         message: "Error: Unable to delete customer", 
-        model: {}  // Pass an empty model if there's an error
+        model: {}
       });
     }
     console.log("Record deleted successfully");
     res.render("delete", { 
       message: "Customer Deleted Successfully!", 
-      model: {}  // Pass an empty model after successful deletion
+      model: {}
     });
   });
 });
 
-// GET /edit
+// Edit Customer - GET (Load customer data into form)
 app.get("/edit/:id", (req, res) => {
   const id = req.params.id;
   const sql = "SELECT * FROM customer WHERE cusid = $1";
   pool.query(sql, [id], (err, result) => {
-    // if (err) ...
     res.render("edit", { model: result.rows[0] });
   });
 });
 
-// POST /edit
+// Edit Customer - POST (Update customer data)
 app.post("/edit/:id", (req, res) => {
   const id = req.params.id;
   const customer = [
@@ -148,25 +155,24 @@ app.post("/edit/:id", (req, res) => {
       console.error("Database query error:", err.message);
       return res.status(500).render("edit", {
         message: "Error: Unable to update customer.",
-        model: req.body  // Pass the current form data back to the form
+        model: req.body
       });
     }
-
     console.log("Record updated successfully");
     res.render("edit", {
       message: "Customer Updated Successfully!",
-      model: req.body  // Pass the updated form data to the form
+      model: req.body
     });
   });
 });
 
+// Import Customers - GET
 app.get("/import", async (req, res) => {
-  const totRecs = await dblib.getTotalRecords();
-  res.render("import", {
-    totRecs: totRecs.totRecords,
-  });
+  const totRecs = await dblib.getTotalRecords(); // Fetch total records
+  res.render("import", { totRecs: totRecs.totRecords });
 });
 
+// Import Customers - POST (Process file upload)
 app.post("/import", upload.single('filename'), async (req, res) => {
   if (!req.file || Object.keys(req.file).length === 0) {
     return res.status(400).json({ message: "Error: Import file not uploaded" });
@@ -179,9 +185,9 @@ app.post("/import", upload.single('filename'), async (req, res) => {
   let failedCount = 0;
   const errors = [];
 
-  // Process file line by line
+  // Process each line in the file
   for (const line of lines) {
-    if (!line.trim()) continue; // Skip empty lines
+    if (!line.trim()) continue;
 
     const product = line.split(",");
     const sql = `
@@ -197,45 +203,32 @@ app.post("/import", upload.single('filename'), async (req, res) => {
     }
   }
 
-  // Send the summary as JSON response
-  res.json({
-    total: lines.length,
-    success: successCount,
-    failed: failedCount,
-    errors: errors
-  });
+  // Return summary of the import process
+  res.json({ total: lines.length, success: successCount, failed: failedCount, errors: errors });
 });
 
-
+// Export Customers - GET
 app.get("/export", async (req, res) => {
-  let message = "";
   const totRecs = await dblib.getTotalRecords();
-
-  res.render("export", {
-    message: message,
-    totRecs: totRecs.totRecords,
-  });
+  res.render("export", { message: "", totRecs: totRecs.totRecords });
 });
 
+// Export Customers - POST (Generate CSV file)
 app.post("/export", (req, res) => {
   const sql = "SELECT * FROM customer ORDER BY cusid";
-  const filename = req.body.filename || "export.csv"; // Default to "export.csv" if empty
-
-  // Ensure the filename ends with ".csv"
+  const filename = req.body.filename || "export.csv";
   const safeFilename = filename.endsWith(".csv") ? filename : `${filename}.csv`;
 
   pool.query(sql, [], (err, result) => {
-    let message = "";
     if (err) {
-      message = `Error - ${err.message}`;
-      res.render("export", { message: message });
+      res.render("export", { message: `Error - ${err.message}` });
     } else {
       let exportdata = "";
       result.rows.forEach(product => {
         exportdata += `${product.cusid},${product.cusfname},${product.cuslname},${product.cusstate},${product.cussalesytd},${product.cussalesprev}\r\n`;
       });
       res.header("Content-Type", "text/csv");
-      res.attachment(safeFilename); // Use the user-provided filename
+      res.attachment(safeFilename);
       return res.send(exportdata);
     }
   });
