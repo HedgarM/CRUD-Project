@@ -86,14 +86,14 @@ const displayResults = (result) => {
             editButton.classList.add("btn", "btn-sm", "btn-warning", "me-2");
             editButton.innerText = "Edit";
             editButton.addEventListener("click", () => {
-                alert(`Edit record ID: ${product.cusid}`);
+                window.location.href = `/edit/${product.cusid}`;;
             });
         
             const deleteButton = document.createElement("button");
             deleteButton.classList.add("btn", "btn-sm", "btn-danger");
             deleteButton.innerText = "Delete";
             deleteButton.addEventListener("click", () => {
-                alert(`Delete record ID: ${product.cusid}`);
+                window.location.href = `/delete/${product.cusid}`;
             });
         
             // Append buttons to actions cell

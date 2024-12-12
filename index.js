@@ -79,3 +79,98 @@ app.post("/create", (req, res) => {
     res.redirect("/managecust");
   });
 });
+
+// GET /delete
+app.get("/delete/:id", (req, res) => {
+  const id = req.params.id;
+  const sql = "SELECT * FROM customer WHERE cusid = $1";
+  pool.query(sql, [id], (err, result) => {
+    // if (err) ...
+    res.render("delete", { model: result.rows[0] });
+  });
+});
+
+// POST /delete
+app.post("/delete/:id", (req, res) => {
+  const id = req.params.id;
+  const sql = "DELETE FROM customer WHERE cusid = $1";
+  pool.query(sql, [id], (err, result) => {
+    // if (err) ...
+    res.redirect("/managecust");
+  });
+});
+
+// GET /edit
+app.get("/edit/:id", (req, res) => {
+  const id = req.params.id;
+  const sql = "SELECT * FROM customer WHERE cusid = $1";
+  pool.query(sql, [id], (err, result) => {
+    // if (err) ...
+    res.render("edit", { model: result.rows[0] });
+  });
+});
+
+// POST /edit
+app.post("/edit/:id", (req, res) => {
+  const id = req.params.id;
+  const customer = [req.body.cusfname, req.body.cuslname, req.body.cusstate, req.body.cussalesytd, req.body.cussalesprev, id];
+  const sql = "UPDATE customer SET cusfname = $1, cuslname = $2, cusstate = $3, cussalesytd = $4, cussalesprev = $5 WHERE (cusid = $6)";
+  pool.query(sql, customer, (err, result) => {
+    // if (err) ...
+    res.redirect("/managecust");
+  });
+});
+
+app.get("/import", (req, res) => {
+  res.render("import");
+});
+
+app.post("/import",  upload.single('filename'), (req, res) => {
+   if(!req.file || Object.keys(req.file).length === 0) {
+       let message = "Error: Import file not uploaded";
+       return res.send(message);
+   };
+   //Read file line by line, inserting records
+   const buffer = req.file.buffer; 
+   const lines = buffer.toString().split(/\r?\n/);
+
+   lines.forEach(line => {
+        //console.log(line);
+        let product = line.split(",");
+        //console.log(product);
+        const sql = "INSERT INTO customer(cusfname, cuslname, cusstate, cussalesytd, cussalesprev) VALUES ($1, $2, $3, $4, $5)";
+        pool.query(sql, product, (err, result) => {
+            if (err) {
+                console.log(`Insert Error.  Error message: ${err.message}`);
+            } else {
+                console.log(`Inserted successfully`);
+            }
+       });
+   });
+   let message = `Processing Complete - Processed ${lines.length} records`;
+   res.send(message);
+});
+
+app.get("/export", (req, res) => {
+  let message = "";
+  res.render("export", { message: message });
+});
+
+app.post("/export", (req, res) => {
+  const sql = "SELECT * FROM customer ORDER BY cusid";
+  pool.query(sql, [], (err, result) => {
+    let message = "";
+    if (err) {
+      message = `Error - ${err.message}`;
+      res.render("export", { message: message })
+    } else {
+      let exportdata = "";
+      result.rows.forEach(product => {
+        exportdata += `${product.cusid},${product.cusfname},${product.cuslname},${product.cusstate},${product.cussalesytd},${product.cussalesprev}\r\n`;
+      });
+      res.header("Content-Type", "text/csv");
+      res.attachment("export.csv");
+      return res.send(exportdata);
+    };
+  });
+});
