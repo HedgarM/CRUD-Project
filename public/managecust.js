@@ -7,7 +7,7 @@ const displayResults = (result) => {
   if (result.trans === "Error") {
       // Create h2 and paragraph elements and add to div
       const h2Elem = document.createElement("h2");
-      h2Elem.innerText = "Application Error";
+      h2Elem.innerText = "Error Creating Customer";
       const paraElement = document.createElement("p");
       paraElement.innerText = result.error;
       // Add elements
