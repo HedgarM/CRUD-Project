@@ -121,8 +121,11 @@ app.post("/edit/:id", (req, res) => {
   });
 });
 
-app.get("/import", (req, res) => {
-  res.render("import");
+app.get("/import", async (req, res) => {
+  const totRecs = await dblib.getTotalRecords();
+  res.render("import", {
+    totRecs: totRecs.totRecords,
+});
 });
 
 app.post("/import",  upload.single('filename'), (req, res) => {
