@@ -1,14 +1,19 @@
 <%- include("_header") -%>
 <br>
-  <h3>Click on submit to export all database records to export.csv</h3>
-  <form action="/export" method="post">
-    <input type="submit" id="submit" value="Download">
-  </form>
-  <% if(message.substring(0,5)==="Error" ) { %>
-    <h2>Error!</h2>
-    <p>
-      <%= message %>
-    </p>
-    <% } %>
-    <br>
+<h1>Customer Export</h1>
+<h4>Total Customers: <%= totRecs %></h4>
+<br>
+<p>Enter a file name and click "Export Customers"</p>
+<form action="/export" method="post">
+  <label for="filename">File Name</label>
+  <input type="text" id="filename" name="filename" placeholder="export.csv" required>
+  <p></p>
+  <button type="submit" class="btn btn-primary">Export Customers</button>
+</form>
+
+<% if (message.substring(0, 5) === "Error") { %>
+  <h2>Error!</h2>
+  <p><%= message %></p>
+<% } %>
+<br>
 <%- include("_footer") -%>

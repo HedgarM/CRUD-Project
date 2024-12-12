@@ -22,8 +22,8 @@ const pool = new Pool({
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept"
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
   );
   next();
 });
@@ -48,14 +48,14 @@ app.get("/managecust", async (req, res) => {
   // Omitted validation check
   const totRecs = await dblib.getTotalRecords();
   res.render("managecust", {
-      totRecs: totRecs.totRecords,
+    totRecs: totRecs.totRecords,
   });
 });
 
 app.post("/managecust", upload.array(), async (req, res) => {
   dblib.findCustomer(req.body)
-      .then(result => res.send(result))
-      .catch(err => res.send({trans: "Error", error: err.message}));
+    .then(result => res.send(result))
+    .catch(err => res.send({ trans: "Error", error: err.message }));
 
 });
 
@@ -125,7 +125,7 @@ app.get("/import", async (req, res) => {
   const totRecs = await dblib.getTotalRecords();
   res.render("import", {
     totRecs: totRecs.totRecords,
-});
+  });
 });
 
 app.post("/import", upload.single('filename'), async (req, res) => {
@@ -168,26 +168,36 @@ app.post("/import", upload.single('filename'), async (req, res) => {
 });
 
 
-app.get("/export", (req, res) => {
+app.get("/export", async (req, res) => {
   let message = "";
-  res.render("export", { message: message });
+  const totRecs = await dblib.getTotalRecords();
+
+  res.render("export", {
+    message: message,
+    totRecs: totRecs.totRecords,
+  });
 });
 
 app.post("/export", (req, res) => {
   const sql = "SELECT * FROM customer ORDER BY cusid";
+  const filename = req.body.filename || "export.csv"; // Default to "export.csv" if empty
+
+  // Ensure the filename ends with ".csv"
+  const safeFilename = filename.endsWith(".csv") ? filename : `${filename}.csv`;
+
   pool.query(sql, [], (err, result) => {
     let message = "";
     if (err) {
       message = `Error - ${err.message}`;
-      res.render("export", { message: message })
+      res.render("export", { message: message });
     } else {
       let exportdata = "";
       result.rows.forEach(product => {
         exportdata += `${product.cusid},${product.cusfname},${product.cuslname},${product.cusstate},${product.cussalesytd},${product.cussalesprev}\r\n`;
       });
       res.header("Content-Type", "text/csv");
-      res.attachment("export.csv");
+      res.attachment(safeFilename); // Use the user-provided filename
       return res.send(exportdata);
-    };
+    }
   });
 });
