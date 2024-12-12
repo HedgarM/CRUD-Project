@@ -1,10 +1,9 @@
 <%- include("_header") -%>
 <br>
 <h1>Delete a record?</h1>
-
+<!-- Delete Form -->
 <form action="/delete/<%= model.cusid %>" method="post">
   <div class="form-horizontal">
-
     <%- include("_display") -%>
 
     <div class="form-group row">
@@ -16,5 +15,12 @@
     </div>
   </div>
 </form>
+<!-- Success Message Section -->
+<% if (typeof message !== "undefined" && message) { %>
+  <div class="alert alert-success mt-4">
+    <strong><%= message %></strong>
+  </div>
+<% } %>
+
 <br>
 <%- include("_footer") -%>

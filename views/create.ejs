@@ -2,9 +2,9 @@
 <br>
 <h1>Create Customer</h1>
 
+<!-- Form to Create Customer -->
 <form action="/create" method="post">
   <div class="form-horizontal">
-
     <%- include("_editor") -%>
 
     <div class="form-group row">
@@ -16,5 +16,13 @@
     </div>
   </div>
 </form>
+
+<!-- Success Message Section -->
+<% if (typeof message !== "undefined" && message) { %>
+  <div class="alert alert-success mt-4">
+    <strong><%= message %></strong>
+  </div>
+<% } %>
+
 <br>
 <%- include("_footer") -%>

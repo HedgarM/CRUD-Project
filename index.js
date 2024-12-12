@@ -70,13 +70,18 @@ app.post("/create", (req, res) => {
   const customer = [req.body.cusfname, req.body.cuslname, req.body.cusstate, req.body.cussalesytd, req.body.cussalesprev];
 
   pool.query(sql, customer, (err, result) => {
-    console.log(sql);
     if (err) {
-      console.error("Database query error:", err.message); // Log the error
-      return res.status(500).send("Error inserting data into the database."); // Send error response
+      console.error("Database query error:", err.message);
+      return res.status(500).render("create", { 
+        message: "Error: Unable to create customer", 
+        model: req.body  // Pass back the entered values
+      });
     }
     console.log("Record added successfully");
-    res.redirect("/managecust");
+    res.render("create", { 
+      message: "New Customer Created!", 
+      model: {}  // Pass an empty model after successful creation
+    });
   });
 });
 
@@ -94,9 +99,20 @@ app.get("/delete/:id", (req, res) => {
 app.post("/delete/:id", (req, res) => {
   const id = req.params.id;
   const sql = "DELETE FROM customer WHERE cusid = $1";
+
   pool.query(sql, [id], (err, result) => {
-    // if (err) ...
-    res.redirect("/managecust");
+    if (err) {
+      console.error("Database query error:", err.message);
+      return res.status(500).render("delete", { 
+        message: "Error: Unable to delete customer", 
+        model: {}  // Pass an empty model if there's an error
+      });
+    }
+    console.log("Record deleted successfully");
+    res.render("delete", { 
+      message: "Customer Deleted Successfully!", 
+      model: {}  // Pass an empty model after successful deletion
+    });
   });
 });
 
@@ -113,11 +129,34 @@ app.get("/edit/:id", (req, res) => {
 // POST /edit
 app.post("/edit/:id", (req, res) => {
   const id = req.params.id;
-  const customer = [req.body.cusfname, req.body.cuslname, req.body.cusstate, req.body.cussalesytd, req.body.cussalesprev, id];
-  const sql = "UPDATE customer SET cusfname = $1, cuslname = $2, cusstate = $3, cussalesytd = $4, cussalesprev = $5 WHERE (cusid = $6)";
+  const customer = [
+    req.body.cusfname, 
+    req.body.cuslname, 
+    req.body.cusstate, 
+    req.body.cussalesytd, 
+    req.body.cussalesprev, 
+    id
+  ];
+
+  const sql = `
+    UPDATE customer 
+    SET cusfname = $1, cuslname = $2, cusstate = $3, cussalesytd = $4, cussalesprev = $5 
+    WHERE cusid = $6`;
+
   pool.query(sql, customer, (err, result) => {
-    // if (err) ...
-    res.redirect("/managecust");
+    if (err) {
+      console.error("Database query error:", err.message);
+      return res.status(500).render("edit", {
+        message: "Error: Unable to update customer.",
+        model: req.body  // Pass the current form data back to the form
+      });
+    }
+
+    console.log("Record updated successfully");
+    res.render("edit", {
+      message: "Customer Updated Successfully!",
+      model: req.body  // Pass the updated form data to the form
+    });
   });
 });
 

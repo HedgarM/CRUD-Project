@@ -1,12 +1,13 @@
 <%- include("_header") -%>
 <br>
 <h1>Update a record</h1>
-
 <form action="/edit/<%= model.cusid %>" method="post">
   <div class="form-horizontal">
 
+    <!-- Include Form Fields -->
     <%- include("_editor") -%>
 
+    <!-- Submit and Cancel Buttons -->
     <div class="form-group row">
       <label class="col-form-label col-sm-2"></label>
       <div class="col-sm-10">
@@ -16,5 +17,12 @@
     </div>
   </div>
 </form>
+<!-- Success or Error Message Section -->
+<% if (typeof message !== "undefined" && message) { %>
+  <div class="alert alert-success mt-4">
+    <strong><%= message %></strong>
+  </div>
+<% } %>
+
 <br>
 <%- include("_footer") -%>
